@@ -2,6 +2,7 @@
   "name": "mesh-slasher",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://ritode.github.io/mesh-slasher",
   "dependencies": {
     "@react-three/csg": "^3.0.0",
     "@react-three/drei": "^9.78.2",
@@ -11,6 +12,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/three": "^0.153.0",
+    "gh-pages": "^5.0.0",
     "install": "^0.13.0",
     "npm": "^9.8.0",
     "prettier": "^3.0.0",
@@ -23,6 +25,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -47,6 +51,8 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "gh-pages": "^5.0.0",
+    "prettier": "2.3.2"
   }
 }
