@@ -5,7 +5,7 @@ import { RigidBody } from '@react-three/rapier'
 import { Parts,Part } from "./part.tsx";
 import { useState, useEffect } from 'react';
 export default function Monkey({position,rotation,running}) {
-    const { nodes } = useGLTF('/models/model.gltf')
+    const { nodes } = useGLTF('./models/model.gltf')
     const [hovered, hover] = useState(false)
     const [clicked, click] = useState(false)
 
