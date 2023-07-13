@@ -1,38 +1,92 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useState, useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useState, useRef, useEffect } from "react";
+import Scene from "./components/Scene";
+import { Vector2 } from "three";
 import "./App.css";
-function Box(props) {
-  const meshRef = useRef();
 
-  const [hovered, setHover] = useState(false);
-  const [active, setActive] = useState(false);
-
-  useFrame((state, delta) => (meshRef.current.rotation.x += delta));
-
-  return (
-    <mesh
-      {...props}
-      ref={meshRef}
-      scale={active ? 1.5 : 1}
-      onClick={(event) => setActive(!active)}
-      onPointerOver={(event) => setHover(true)}
-      onPointerOut={(event) => setHover(false)}
-    >
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
-    </mesh>
-  );
-}
+import { OrbitControls, Plane } from "@react-three/drei";
 
 function App() {
+  const [point1, setPoint1] = useState(new Vector2(0, 0));
+  const [point2, setPoint2] = useState(new Vector2(0, 0));
+  const [running, setRunnning] = useState(false);
+  const [orbitMode, setOrbitMode] = useState(false);
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "q") {
+        setOrbitMode(true);
+      }
+    };
+    const handleKeyUp = (event) => {
+      if (event.key === "q") {
+        setOrbitMode(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyUp);
+      document.addEventListener("keyup", handleKeyDown);
+    };
+  }, []);
+
+  function handleClick(e) {
+    setRunnning(true);
+    const point = new Vector2(e.clientX, e.clientY, 0);
+    setPoint1(point);
+    setPoint2(point);
+  }
+
+  function handleUnclick(e) {
+    const point = new Vector2(e.clientX, e.clientY, 0);
+
+    setPoint2(point);
+    setRunnning(false);
+  }
+
+  useEffect(() => {
+    window.addEventListener("mousedown", handleClick);
+    window.addEventListener("mouseup", handleUnclick);
+
+    return () => {
+      window.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("mouseup", handleUnclick);
+    };
+  }, []);
   return (
     <div className="App">
-      <Canvas>
-        <ambientLight />
+      <Canvas ref={canvasRef}>
         <pointLight position={[10, 10, 10]} />
-        <Box position={[-1.2, 0, 0]} />
-        <Box position={[1.2, 0, 0]} />
+        <ambientLight intensity={0.5} />
+      <spotLight position={[0, 15, 5]} angle={0.25} penumbra={1} castShadow />
+      <pointLight position={[-10, -10, -10]} />
+        <Scene point1={point1} point2={point2} running={running} />
+        <OrbitControls enabled={orbitMode} />
       </Canvas>
+      <svg
+        className="line"
+        style={{
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+          zIndex: 99999,
+          pointerEvents: "none",
+          top: 0,
+          left: 0,
+        }}
+      >
+        <line
+          x1={point1.x}
+          y1={point1.y}
+          x2={point2.x}
+          y2={point2.y}
+          stroke="black"
+          strokeWidth="2"
+        />
+      </svg>
     </div>
   );
 }
