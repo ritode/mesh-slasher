@@ -64,7 +64,7 @@ function App() {
         <spotLight position={[0, 15, 5]} angle={0.25} penumbra={1} castShadow />
         <pointLight position={[-10, -10, -10]} />
         <Scene point1={point1} point2={point2} running={running} />
-        <OrbitControls enabled={orbitMode} />
+        <OrbitControls enabled={orbitMode} zoomSpeed={1} />
       </Canvas>
       <svg
         className="line"
