@@ -18,11 +18,11 @@ export default function Monkey({ position, rotation, running }) {
           <mesh
             castShadow
             receiveShadow
-            onPointerOver={() => hover(true)}
-            onPointerOut={() => hover(false)}
-            onPointerMove={() => {
+            onPointerOver={() => {
+              hover(true);
               if (running) click(true);
             }}
+            onPointerOut={() => hover(false)}
             geometry={nodes.Suzanne.geometry}
           >
             <meshStandardMaterial color={hovered ? "hotpink" : "aquamarine"} />
@@ -40,12 +40,12 @@ export default function Monkey({ position, rotation, running }) {
                 >
                   <boxGeometry args={[1000, 0.02, 1000]} />
                 </Base>
-                <Addition
+                {/* <Addition
                   position={[0, 1, 0]}
                   rotation={[Math.PI / 4, -Math.PI / 4, 0]}
                 >
                   <boxGeometry args={[1000, 1000, 0.02]} />
-                </Addition>
+                </Addition> */}
               </Geometry>
             </Subtraction>
           </Geometry>

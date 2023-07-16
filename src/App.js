@@ -4,7 +4,7 @@ import Scene from "./components/Scene";
 import { Vector2 } from "three";
 import "./App.css";
 
-import { OrbitControls, Plane } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 
 function App() {
   const [point1, setPoint1] = useState(new Vector2(0, 0));
@@ -47,22 +47,22 @@ function App() {
     setRunnning(false);
   }
 
-  useEffect(() => {
-    window.addEventListener("mousedown", handleClick);
-    window.addEventListener("mouseup", handleUnclick);
+  // useEffect(() => {
+  //   window.addEventListener("mousedown", handleClick);
+  //   window.addEventListener("mouseup", handleUnclick);
 
-    return () => {
-      window.removeEventListener("mousedown", handleClick);
-      window.removeEventListener("mouseup", handleUnclick);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("mousedown", handleClick);
+  //     window.removeEventListener("mouseup", handleUnclick);
+  //   };
+  // }, []);
   return (
     <div className="App">
       <Canvas ref={canvasRef}>
         <pointLight position={[10, 10, 10]} />
         <ambientLight intensity={0.5} />
-      <spotLight position={[0, 15, 5]} angle={0.25} penumbra={1} castShadow />
-      <pointLight position={[-10, -10, -10]} />
+        <spotLight position={[0, 15, 5]} angle={0.25} penumbra={1} castShadow />
+        <pointLight position={[-10, -10, -10]} />
         <Scene point1={point1} point2={point2} running={running} />
         <OrbitControls enabled={orbitMode} />
       </Canvas>
