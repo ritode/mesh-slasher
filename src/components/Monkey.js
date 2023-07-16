@@ -1,65 +1,133 @@
 import { useCursor, useGLTF } from "@react-three/drei";
-import { Geometry, Base, Subtraction, Addition } from "@react-three/csg";
+import { Geometry, Base, Subtraction, Intersection } from "@react-three/csg";
 import { RigidBody } from "@react-three/rapier";
-import { Parts, Part } from "./part.tsx";
-import { useState, useEffect } from "react";
-export default function Monkey({ position, rotation, running }) {
+import { useState, useEffect, useRef } from "react";
+import { Vector3, Euler, BoxGeometry, Matrix4 } from "three";
+import { useThree } from "@react-three/fiber";
+
+export default function Monkey({ position }) {
   const { nodes } = useGLTF(
     "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/suzanne-low-poly/model.gltf"
   );
-  const [hovered, hover] = useState(false);
-  const [clicked, click] = useState(false);
+  const mesh = useRef();
+  const csg = useRef();
 
-  useCursor(hovered);
+  const [cut, setCut] = useState(false);
+  const [running, setRunning] = useState(false);
+
+  const [start, setStart] = useState(new Vector3());
+  const [end, setEnd] = useState(new Vector3());
+
+  const [planePosition, setPlanePosition] = useState(new Vector3());
+  const [planeRotation, setPlaneRotation] = useState(new Euler(0, 0, 0.1));
+
+  const boxCut = new BoxGeometry(2, 10, 10);
+  boxCut.applyMatrix4(new Matrix4().makeTranslation(1, 0, 0));
+
+  function Cutter({ start }) {
+    return (
+      <Subtraction position={start} rotation={planeRotation}>
+        <boxGeometry args={[0.1, 10, 10]} />
+      </Subtraction>
+    );
+  }
+
+  const boxGeometry = new BoxGeometry(3, 3, 3);
+
+  function handleClick() {
+    setCut(false);
+    setRunning(true);
+    setStart(new Vector3(0, 0, 0));
+  }
+
+  function handleUnClick() {
+    setCut(true);
+    setRunning(false);
+  }
+
+  const { camera } = useThree();
+
+  useEffect(() => {
+    window.addEventListener("mousedown", handleClick);
+    window.addEventListener("mouseup", handleUnClick);
+
+    return () => {
+      window.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("mouseup", handleUnClick);
+    };
+  }, []);
   return (
-    <group position={position} rotation={rotation}>
-      {!clicked ? (
-        <RigidBody colliders="hull" type="fixed">
-          <mesh
-            castShadow
-            receiveShadow
-            onPointerOver={() => {
-              hover(true);
-              if (running) click(true);
-            }}
-            onPointerOut={() => hover(false)}
-            geometry={nodes.Suzanne.geometry}
-          >
-            <meshStandardMaterial color={hovered ? "hotpink" : "aquamarine"} />
-          </mesh>
-        </RigidBody>
-      ) : (
-        <Parts>
-          <Geometry>
-            <Base geometry={nodes.Suzanne.geometry} position={[0, 0, 0]} />
-            <Subtraction>
-              <Geometry>
-                <Base
-                  position={[0, 1, 0]}
-                  rotation={[Math.PI / 4, -Math.PI / 4, 0]}
-                >
-                  <boxGeometry args={[1000, 0.02, 1000]} />
-                </Base>
-                {/* <Addition
-                  position={[0, 1, 0]}
-                  rotation={[Math.PI / 4, -Math.PI / 4, 0]}
-                >
-                  <boxGeometry args={[1000, 1000, 0.02]} />
-                </Addition> */}
-              </Geometry>
-            </Subtraction>
+    <group>
+      {!cut ? (
+        <mesh
+          position={position}
+          onPointerMove={(e) => {
+            setEnd(mesh.current.worldToLocal(e.point));
+            if (running) {
+              if ((start.x === 0) & (start.y === 0) & (start.z === 0)) {
+                setStart(mesh.current.worldToLocal(e.point));
+                setPlanePosition(mesh.current.worldToLocal(e.point));
+              } else {
+                setPlanePosition(
+                  new Vector3(
+                    (start.x + end.x) / 2,
+                    (start.y + end.y) / 2,
+                    (start.z + end.z) / 2
+                  )
+                );
+                const z =
+                  Math.PI / 2 +
+                  Math.atan((start.y - end.y) / (start.x - end.x));
+                let x = new Euler(0, 0, 0);
+                // x.setFromQuaternion(camera.quaternion);
+                x.z = z;
+                setPlaneRotation(x);
+              }
+              csg.current.update();
+            }
+          }}
+          ref={mesh}
+        >
+          <meshNormalMaterial />
+          <Geometry ref={csg}>
+            <Base geometry={nodes.Suzanne.geometry} />
+            {/* <Cutter start={planePosition} /> */}
           </Geometry>
-          <Part>
-            {(geometry, index) => (
-              <RigidBody key={index} colliders="hull">
-                <mesh castShadow receiveShadow geometry={geometry}>
-                  <meshStandardMaterial color={Math.random() * 0xffffff} />
-                </mesh>
-              </RigidBody>
-            )}
-          </Part>
-        </Parts>
+        </mesh>
+      ) : (
+        <group>
+          <RigidBody colliders="hull">
+            <mesh position={position}>
+              <meshNormalMaterial />
+              <Geometry ref={csg}>
+                <Base geometry={nodes.Suzanne.geometry} />
+                <Subtraction
+                  position={planePosition}
+                  rotation={planeRotation}
+                  geometry={boxCut}
+                ></Subtraction>
+              </Geometry>
+            </mesh>
+          </RigidBody>
+
+          <RigidBody colliders="hull">
+            <mesh position={position}>
+              <meshNormalMaterial />
+              <Geometry ref={csg}>
+                <Base geometry={nodes.Suzanne.geometry} />
+                <Intersection
+                  position={planePosition}
+                  rotation={planeRotation}
+                  geometry={boxCut}
+                ></Intersection>
+              </Geometry>
+            </mesh>
+          </RigidBody>
+        </group>
       )}
+      {/* <mesh geometry={boxCut} position={planePosition} rotation={planeRotation}>
+        <meshNormalMaterial />
+      </mesh> */}
     </group>
   );
 }
