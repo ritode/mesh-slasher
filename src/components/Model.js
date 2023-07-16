@@ -6,8 +6,9 @@ import { PivotControls } from "@react-three/drei";
 import { Matrix4 } from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { RigidBody } from "@react-three/rapier";
+import { useGLTF } from "@react-three/drei";
 
-export default function Box({ position }) {
+export default function Model({ position, meshGeo }) {
   const mesh = useRef();
   const csg = useRef();
 
@@ -30,8 +31,6 @@ export default function Box({ position }) {
       </Subtraction>
     );
   }
-
-  const boxGeometry = new BoxGeometry(3, 3, 3);
 
   function handleClick() {
     setCut(false);
@@ -90,7 +89,7 @@ export default function Box({ position }) {
         >
           <meshNormalMaterial />
           <Geometry ref={csg}>
-            <Base geometry={boxGeometry} />
+            <Base geometry={meshGeo} />
             {/* <Cutter start={planePosition} /> */}
           </Geometry>
         </mesh>
@@ -100,7 +99,7 @@ export default function Box({ position }) {
             <mesh position={position}>
               <meshNormalMaterial />
               <Geometry ref={csg}>
-                <Base geometry={boxGeometry} />
+                <Base geometry={meshGeo} />
                 <Subtraction
                   position={planePosition}
                   rotation={planeRotation}
@@ -114,7 +113,7 @@ export default function Box({ position }) {
             <mesh position={position}>
               <meshNormalMaterial />
               <Geometry ref={csg}>
-                <Base geometry={boxGeometry} />
+                <Base geometry={meshGeo} />
                 <Intersection
                   position={planePosition}
                   rotation={planeRotation}
