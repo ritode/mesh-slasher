@@ -4,6 +4,8 @@ import { Geometry, Base, Subtraction, Intersection } from "@react-three/csg";
 import { BoxGeometry, Euler, Vector3 } from "three";
 import { PivotControls } from "@react-three/drei";
 import { Matrix4 } from "three";
+import { useFrame, useThree } from "@react-three/fiber";
+import { RigidBody } from "@react-three/rapier";
 
 export default function Box({ position }) {
   const mesh = useRef();
@@ -42,6 +44,8 @@ export default function Box({ position }) {
     setRunning(false);
   }
 
+  const { camera } = useThree();
+
   useEffect(() => {
     window.addEventListener("mousedown", handleClick);
     window.addEventListener("mouseup", handleUnClick);
@@ -64,31 +68,20 @@ export default function Box({ position }) {
                 setStart(mesh.current.worldToLocal(e.point));
                 setPlanePosition(mesh.current.worldToLocal(e.point));
               } else {
-                if (start.x > end.x) {
-                  setPlanePosition(
-                    new Vector3(
-                      (start.x + end.x) / 2,
-                      (start.y + end.y) / 2,
-                      (start.z + end.z) / 2
-                    )
-                  );
-                  const x =
-                    Math.PI / 2 +
-                    Math.atan((start.y - end.y) / (start.x - end.x));
-                  setPlaneRotation(new Euler(0, 0, x));
-                } else {
-                  setPlanePosition(
-                    new Vector3(
-                      (start.x + end.x) / 2,
-                      (start.y + end.y) / 2,
-                      (start.z + end.z) / 2
-                    )
-                  );
-                  const x =
-                    Math.PI / 2 +
-                    Math.atan((start.y - end.y) / (start.x - end.x));
-                  setPlaneRotation(new Euler(0, 0, x));
-                }
+                setPlanePosition(
+                  new Vector3(
+                    (start.x + end.x) / 2,
+                    (start.y + end.y) / 2,
+                    (start.z + end.z) / 2
+                  )
+                );
+                const z =
+                  Math.PI / 2 +
+                  Math.atan((start.y - end.y) / (start.x - end.x));
+                let x = new Euler(0, 0, 0);
+                // x.setFromQuaternion(camera.quaternion);
+                x.z = z;
+                setPlaneRotation(x);
               }
               csg.current.update();
             }
@@ -98,33 +91,38 @@ export default function Box({ position }) {
           <meshNormalMaterial />
           <Geometry ref={csg}>
             <Base geometry={boxGeometry} />
-            <Cutter start={planePosition} />
+            {/* <Cutter start={planePosition} /> */}
           </Geometry>
         </mesh>
       ) : (
         <group>
-          <mesh position={position}>
-            <meshNormalMaterial />
-            <Geometry ref={csg}>
-              <Base geometry={boxGeometry} />
-              <Subtraction
-                position={planePosition}
-                rotation={planeRotation}
-                geometry={boxCut}
-              ></Subtraction>
-            </Geometry>
-          </mesh>
-          <mesh position={[position[0] + 1, position[1] + 1, position[2]]}>
-            <meshNormalMaterial />
-            <Geometry ref={csg}>
-              <Base geometry={boxGeometry} />
-              <Intersection
-                position={planePosition}
-                rotation={planeRotation}
-                geometry={boxCut}
-              ></Intersection>
-            </Geometry>
-          </mesh>
+          <RigidBody colliders="hull">
+            <mesh position={position}>
+              <meshNormalMaterial />
+              <Geometry ref={csg}>
+                <Base geometry={boxGeometry} />
+                <Subtraction
+                  position={planePosition}
+                  rotation={planeRotation}
+                  geometry={boxCut}
+                ></Subtraction>
+              </Geometry>
+            </mesh>
+          </RigidBody>
+
+          <RigidBody colliders="hull">
+            <mesh position={position}>
+              <meshNormalMaterial />
+              <Geometry ref={csg}>
+                <Base geometry={boxGeometry} />
+                <Intersection
+                  position={planePosition}
+                  rotation={planeRotation}
+                  geometry={boxCut}
+                ></Intersection>
+              </Geometry>
+            </mesh>
+          </RigidBody>
         </group>
       )}
       {/* <mesh geometry={boxCut} position={planePosition} rotation={planeRotation}>

@@ -47,15 +47,15 @@ function App() {
     setRunnning(false);
   }
 
-  // useEffect(() => {
-  //   window.addEventListener("mousedown", handleClick);
-  //   window.addEventListener("mouseup", handleUnclick);
+  useEffect(() => {
+    window.addEventListener("mousedown", handleClick);
+    window.addEventListener("mouseup", handleUnclick);
 
-  //   return () => {
-  //     window.removeEventListener("mousedown", handleClick);
-  //     window.removeEventListener("mouseup", handleUnclick);
-  //   };
-  // }, []);
+    return () => {
+      window.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("mouseup", handleUnclick);
+    };
+  }, []);
   return (
     <div className="App">
       <Canvas ref={canvasRef}>
