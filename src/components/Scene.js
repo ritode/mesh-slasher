@@ -19,7 +19,7 @@ export default function Scene() {
   return (
     <>
       {/* <Plane args={[0.5, 2.5]} position={intersectionPoint} ref={planeRef} /> */}
-      <Physics timeStep="vary" gravity={[0, -25, 0]}>
+      <Physics timeStep="vary" gravity={[0, -10, 0]}>
         {/* <Model position={[0, 0, 0]} meshGeo={nodes.Suzanne.geometry} /> */}
         <Model position={[0, 0, 0]} meshGeo={sphereGeometry} />
         <CuboidCollider
